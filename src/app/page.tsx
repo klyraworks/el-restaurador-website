@@ -50,36 +50,78 @@ const IconHash = ({ size = 14 }: { size?: number }) => (
   </svg>
 );
 
-const IconAlert = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-    <path d="M12 9v4"/>
-    <path d="M12 17h.01"/>
+const IconCheck = ({ size = 11 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
 
-/* ─── SVG tricimoto ─── */
-function TricimotoSVG({ color }: { color: string }) {
-  const fill = TRIKE_COLORS[color]?.hex || "#2a2d36";
+const IconClock = ({ size = 11 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+/* ─── tricimoto image ─── */
+function TricimotoImage({ color }: { color: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [prev, setPrev] = useState(color);
+
+  useEffect(() => {
+    if (color !== prev) {
+      setLoaded(false);
+      setPrev(color);
+    }
+  }, [color, prev]);
+
+  if (!color) {
   return (
-    <svg viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
-      <rect x="30" y="30" width="120" height="70" rx="12" fill={fill} style={{ transition: "fill 0.35s ease" }} />
-      <rect x="40" y="18" width="100" height="20" rx="6" fill={fill} style={{ transition: "fill 0.35s ease" }} />
-      <rect x="42" y="34" width="30" height="35" rx="4" fill="white" opacity="0.22" />
-      <rect x="78" y="34" width="30" height="35" rx="4" fill="white" opacity="0.22" />
-      <line x1="75" y1="30" x2="75" y2="100" stroke="white" strokeWidth="1.5" opacity="0.25" />
-      <rect x="112" y="62" width="10" height="3" rx="1.5" fill="white" opacity="0.45" />
-      <rect x="148" y="55" width="12" height="16" rx="4" fill={fill} style={{ transition: "fill 0.35s ease" }} />
-      <rect x="149" y="57" width="9" height="12" rx="3" fill="white" opacity="0.35" />
-      <circle cx="52" cy="105" r="18" fill="#18181b" />
-      <circle cx="52" cy="105" r="10" fill="#e4e4e7" />
-      <circle cx="52" cy="105" r="4" fill="#18181b" />
-      <circle cx="152" cy="108" r="14" fill="#18181b" />
-      <circle cx="152" cy="108" r="7" fill="#e4e4e7" />
-      <circle cx="152" cy="108" r="3" fill="#18181b" />
-      <rect x="30" y="95" width="120" height="8" rx="4" fill={fill} opacity="0.65" style={{ transition: "fill 0.35s ease" }} />
-      <rect x="148" y="78" width="18" height="20" rx="4" fill={fill} opacity="0.8" style={{ transition: "fill 0.35s ease" }} />
-    </svg>
+    <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: "16px", overflow: "hidden", background: "#F4F4F5" }}>
+      <img
+        src="/tricimoto_default.png"
+        alt="Tricimoto"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+          borderRadius: "16px",
+          display: "block",
+        }}
+      />
+    </div>
+  );
+}
+
+  return (
+    <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: "16px", overflow: "hidden", position: "relative", background: "#F4F4F5" }}>
+      {!loaded && (
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "#F4F4F5",
+          borderRadius: "16px",
+          animation: "pulse 1.4s infinite",
+        }} />
+      )}
+      <img
+        key={color}
+        src={`/tricimoto_${color}.png`}
+        alt={`Tricimoto ${color}`}
+        onLoad={() => setLoaded(true)}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center",
+          borderRadius: "16px",
+          display: "block",
+          opacity: loaded ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      />
+    </div>
   );
 }
 
@@ -173,13 +215,13 @@ function NumberGrid({
 }
 
 /* ─── stat card ─── */
-function StatCard({ label, value, warn, icon }: {
-  label: string; value: React.ReactNode; warn?: boolean; icon: React.ReactNode;
+function StatCard({ label, value, icon }: {
+  label: string; value: string; icon: React.ReactNode;
 }) {
   return (
     <div style={{
       background: "#fff",
-      border: `1px solid ${warn ? "#FDE68A" : "#E4E4E7"}`,
+      border: "1px solid #E4E4E7",
       borderRadius: "12px",
       padding: "16px 20px",
       flex: 1,
@@ -191,20 +233,40 @@ function StatCard({ label, value, warn, icon }: {
           {label}
         </span>
       </div>
-      <div style={{
-        fontSize: warn ? "13px" : "22px",
-        fontWeight: warn ? 600 : 800,
-        color: warn ? "#92400E" : "#10121A",
-        fontFamily: warn ? "inherit" : "monospace",
-        letterSpacing: warn ? "normal" : "-0.5px",
+      <p style={{
+        fontSize: "22px",
+        fontWeight: 800,
+        color: "#10121A",
+        fontFamily: "monospace",
+        letterSpacing: "-0.5px",
         lineHeight: 1,
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
       }}>
         {value}
-      </div>
+      </p>
     </div>
+  );
+}
+
+/* ─── estado badge ─── */
+function EstadoBadge({ pendiente }: { pendiente: boolean }) {
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      fontSize: "11px",
+      fontWeight: 600,
+      padding: "3px 9px",
+      borderRadius: "20px",
+      background: pendiente ? "#FEF3C7" : "#DCFCE7",
+      color: pendiente ? "#92400E" : "#166534",
+      border: `1px solid ${pendiente ? "#FDE68A" : "#BBF7D0"}`,
+      letterSpacing: "0.01em",
+      flexShrink: 0,
+    }}>
+      {pendiente ? <IconClock size={10} /> : <IconCheck size={10} />}
+      {pendiente ? "Pendiente" : "Pagado"}
+    </span>
   );
 }
 
@@ -213,48 +275,37 @@ function ServiceCard({ s, index }: { s: Servicio; index: number }) {
   const fecha = new Date(s.created_at);
   const fechaStr = fecha.toLocaleDateString("es-EC", { day: "2-digit", month: "short", year: "numeric" });
   const horaStr = fecha.toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" });
+  const pendiente = parseFloat(s.monto_pendiente) > 0;
 
   return (
     <div style={{
       background: "#fff",
       border: "1px solid #E4E4E7",
       borderRadius: "14px",
-      padding: "20px 24px",
+      padding: "18px 22px",
       animation: "fadeUp 0.3s ease both",
       animationDelay: `${index * 0.055}s`,
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "10px", flexWrap: "wrap" }}>
-        <span style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "4px",
-          fontSize: "11px",
-          fontFamily: "monospace",
-          color: "#A1A1AA",
-          background: "#F4F4F5",
-          padding: "2px 7px",
-          borderRadius: "5px",
-        }}>
-          <IconHash size={10} />
-          {s.id}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#A1A1AA" }}>
+          <IconCalendar size={12} />
+          <span style={{ fontSize: "11px", fontFamily: "monospace" }}>{fechaStr} · {horaStr}</span>
+        </div>
+        <EstadoBadge pendiente={pendiente} />
       </div>
 
-      <p style={{ fontSize: "15px", fontWeight: 600, color: "#10121A", marginBottom: "12px", lineHeight: 1.4 }}>
+      <p style={{ fontSize: "14px", fontWeight: 600, color: "#10121A", lineHeight: 1.45 }}>
         {s.descripcion ?? (
           <span style={{ color: "#A1A1AA", fontStyle: "italic", fontWeight: 400 }}>Sin descripción</span>
         )}
       </p>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#71717A" }}>
-          <IconWrench />
-          <span style={{ fontSize: "13px" }}>{s.mecanico}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#A1A1AA" }}>
-          <IconCalendar />
-          <span style={{ fontSize: "11px", fontFamily: "monospace" }}>{fechaStr} · {horaStr}</span>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#71717A" }}>
+        <IconWrench size={13} />
+        <span style={{ fontSize: "12px" }}>{s.mecanico}</span>
       </div>
     </div>
   );
@@ -277,21 +328,18 @@ function SkeletonCard({ delay = 0 }: { delay?: number }) {
       background: "#fff",
       border: "1px solid #E4E4E7",
       borderRadius: "14px",
-      padding: "20px 24px",
+      padding: "18px 22px",
       display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: "20px",
+      flexDirection: "column",
+      gap: "10px",
       animationDelay: `${delay}s`,
     }}>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
-        <div style={{ display: "flex", gap: "8px" }}>
-          {bar("50px", "18px", 0)}
-          {bar("70px", "18px", 0.05)}
-        </div>
-        {bar("60%", "20px", 0.1)}
-        {bar("35%", "16px", 0.15)}
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        {bar("120px", "16px", 0)}
+        {bar("70px", "22px", 0.05)}
       </div>
+      {bar("65%", "18px", 0.1)}
+      {bar("30%", "14px", 0.15)}
     </div>
   );
 }
@@ -333,10 +381,16 @@ export default function Home() {
   };
 
   const numerosDisponibles = colorSel ? (colores[colorSel] || []) : [];
-  const tienePendiente = servicios.some(s => parseFloat(s.monto_pendiente) > 0);
   const accentHex = TRIKE_COLORS[colorSel]?.hex ?? "#10121A";
   const coloresDisponibles = Object.keys(colores).sort();
   const showStats = colorSel && numSel && !loading && servicios.length > 0;
+
+  const ultimoServicio = servicios.length > 0
+    ? new Date(Math.max(...servicios.map(s => new Date(s.created_at).getTime())))
+    : null;
+  const ultimoServicioStr = ultimoServicio
+    ? ultimoServicio.toLocaleDateString("es-EC", { day: "2-digit", month: "short", year: "numeric" })
+    : "—";
 
   return (
     <>
@@ -353,20 +407,12 @@ export default function Home() {
         }
         button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button:active { transform: scale(0.96) !important; }
+
         .hero-grid {
           display: grid;
-          grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
-          gap: 36px;
-          align-items: center;
-        }
-        .trike-bg {
-          background: #F4F4F5;
-          border-radius: 14px;
-          padding: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          aspect-ratio: 10/7;
+          grid-template-columns: 300px 1fr;
+          gap: 32px;
+          align-items: start;
         }
         .stats-row {
           display: flex;
@@ -375,17 +421,30 @@ export default function Home() {
           flex-wrap: wrap;
           animation: fadeUp 0.28s ease;
         }
-        @media (max-width: 600px) {
-          .hero-grid { grid-template-columns: 1fr; gap: 20px; }
-          .trike-bg { max-width: 220px; margin: 0 auto; aspect-ratio: unset; height: 130px; }
-          .page-main { padding: 20px 14px !important; }
-          .page-nav { padding: 0 16px !important; }
-          .page-footer { flex-direction: column; gap: 4px !important; }
+
+        @media (max-width: 680px) {
+          .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .trike-image-wrap {
+            max-width: 260px !important;
+            margin: 0 auto;
+          }
+          .page-main { padding: 16px 14px 60px !important; }
+          .page-nav  { padding: 0 16px !important; }
+          .page-footer { flex-direction: column; align-items: flex-start !important; gap: 6px !important; }
           .hero-card { padding: 20px !important; }
         }
       `}</style>
 
-      <div style={{ minHeight: "100vh", background: "#F4F4F5", fontFamily: "Inter, system-ui, -apple-system, sans-serif", display: "flex", flexDirection: "column" }}>
+      <div style={{
+        minHeight: "100vh",
+        background: "#F4F4F5",
+        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+      }}>
 
         {/* ── Nav ── */}
         <nav className="page-nav" style={{
@@ -414,30 +473,36 @@ export default function Home() {
               El Restaurador
             </span>
           </div>
-          <span style={{ fontSize: "11px", color: "#A1A1AA", fontFamily: "monospace", letterSpacing: "0.01em" }}>
+          <span style={{ fontSize: "11px", color: "#A1A1AA", fontFamily: "monospace" }}>
             Historial de servicios
           </span>
         </nav>
 
-        <main className="page-main" style={{ maxWidth: "860px", margin: "0 auto", padding: "36px 20px 60px", flex: 1, width: "100%" }}>
+        <main className="page-main" style={{
+          maxWidth: "860px",
+          margin: "0 auto",
+          padding: "32px 20px 60px",
+          flex: 1,
+          width: "100%",
+        }}>
 
-          {/* ── Hero selector ── */}
+          {/* ── Hero card ── */}
           <div className="hero-card" style={{
             background: "#fff",
             border: "1px solid #E4E4E7",
             borderRadius: "18px",
-            padding: "28px",
-            marginBottom: "20px",
+            padding: "24px",
+            marginBottom: "16px",
           }}>
             <div className="hero-grid">
 
-              {/* Tricimoto preview */}
-              <div className="trike-bg">
-                <TricimotoSVG color={colorSel} />
+              {/* Imagen tricimoto */}
+              <div className="trike-image-wrap">
+                <TricimotoImage color={colorSel} />
               </div>
 
-              {/* Selector panel */}
-              <div>
+              {/* Panel selector */}
+              <div style={{ paddingTop: "4px" }}>
                 <p style={{
                   fontSize: "10px",
                   fontWeight: 700,
@@ -449,18 +514,18 @@ export default function Home() {
                   El Restaurador
                 </p>
                 <h1 style={{
-                  fontSize: "24px",
+                  fontSize: "22px",
                   fontWeight: 800,
                   color: "#10121A",
-                  letterSpacing: "-0.6px",
-                  lineHeight: 1.15,
-                  marginBottom: "24px",
+                  letterSpacing: "-0.5px",
+                  lineHeight: 1.2,
+                  marginBottom: "28px",
                 }}>
                   Consulta de<br />servicios
                 </h1>
 
                 {/* Color */}
-                <div style={{ marginBottom: "18px" }}>
+                <div style={{ marginBottom: "20px" }}>
                   <p style={{
                     fontSize: "10px",
                     fontWeight: 700,
@@ -523,45 +588,15 @@ export default function Home() {
           {showStats && (
             <div className="stats-row">
               <StatCard
-                label="Servicios"
+                label="Total servicios"
                 value={String(servicios.length)}
                 icon={<IconActivity />}
               />
-              {tienePendiente && (
-                <StatCard
-                  label="Saldo pendiente"
-                  warn
-                  icon={<IconAlert />}
-                  value={
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" }}>
-                      <IconAlert size={14} />
-                      Tiene pagos pendientes
-                    </span>
-                  }
-                />
-              )}
-              <div style={{
-                background: "#fff",
-                border: "1px solid #E4E4E7",
-                borderRadius: "12px",
-                padding: "16px 20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "9px",
-                flexShrink: 0,
-              }}>
-                <div style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  background: accentHex,
-                  transition: "background 0.35s ease",
-                  flexShrink: 0,
-                }} />
-                <span style={{ fontSize: "14px", fontWeight: 700, color: "#10121A", fontFamily: "monospace", letterSpacing: "-0.3px" }}>
-                  {numSel} {colorSel}
-                </span>
-              </div>
+              <StatCard
+                label="Último servicio"
+                value={ultimoServicioStr}
+                icon={<IconCalendar size={14} />}
+              />
             </div>
           )}
 
