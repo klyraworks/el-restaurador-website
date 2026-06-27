@@ -62,8 +62,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id } = body;
 
-  if (!tricimoto_num || !tricimoto_color || monto_total == null || monto_pendiente == null || !mecanico_id) {
-    return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
+  if (
+      !tricimoto_num ||
+      !tricimoto_color ||
+      monto_total === undefined || monto_total === null ||
+      monto_pendiente === undefined || monto_pendiente === null ||
+      !mecanico_id
+  ) {
+    return NextResponse.json({error: "Faltan campos requeridos"}, {status: 400});
   }
 
   const row = await queryOne<{ id: number }>(`
