@@ -17,7 +17,7 @@ interface Servicio {
 interface Usuario { id: number; nombre: string; rol: string; }
 
 const ESTADOS = ["pendiente", "pagado", "anulado"];
-const COLORES = ["Rojo","Azul","Verde","Amarillo"];
+const COLORES: Record<string, string> = { roja: "Rojo", azul: "Azul", verde: "Verde", amarilla: "Amarillo" };
 
 const EST: Record<string, { bg: string; color: string; border: string; label: string }> = {
   pagado:  { bg: "#DCFCE7", color: "#166534", border: "#BBF7D0", label: "Pagado"   },
@@ -121,7 +121,9 @@ export default function ServiciosPage() {
         </select>
         <select value={filtroColor} onChange={e => { setFiltroColor(e.target.value); setPage(1); }} className="adm-sel" style={{ width:"auto", minWidth:"150px" }}>
           <option value="">Todos los colores</option>
-          {COLORES.map(c => <option key={c} value={c}>{c}</option>)}
+          {Object.entries(COLORES).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+          ))}
         </select>
         {(filtroEstado || filtroColor) && (
           <button onClick={() => { setFiltroEstado(""); setFiltroColor(""); setPage(1); }} style={S.ghost}>Limpiar</button>
@@ -206,7 +208,9 @@ export default function ServiciosPage() {
                 <div>
                   <label style={S.label}>Color</label>
                   <select value={form.tricimoto_color} onChange={e => setForm(prev => ({ ...prev, tricimoto_color: e.target.value }))} className="adm-sel">
-                    {COLORES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {Object.entries(COLORES).map(([key, label]) => (
+                        <option key={key} value={key}>{label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
