@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth-helpers";
 import { query } from "@/lib/db";
+import RevenueChart from "@/components/admin/RevenueChart";
 
 interface Stats {
   total_servicios: string;
@@ -124,6 +125,8 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <RevenueChart />
 
       {/* Servicios recientes */}
       <div style={{ background: "#fff", border: "1px solid #E4E4E7", borderRadius: "14px", overflow: "hidden" }}>
