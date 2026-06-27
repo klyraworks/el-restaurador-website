@@ -35,7 +35,7 @@ const S = {
   td:      { padding:"12px 16px" },
 };
 
-const DEF = { tricimoto_num:"", tricimoto_color:"Rojo", descripcion:"", monto_total:"", monto_pendiente:"", mecanico_id:"", estado:"pendiente" };
+const DEF = { tricimoto_num:"", tricimoto_color:"roja", descripcion:"", monto_total:"", monto_pendiente:"", mecanico_id:"", estado:"pendiente" };
 
 export default function ServiciosPage() {
   const [rows, setRows]         = useState<Servicio[]>([]);
