@@ -17,7 +17,7 @@ interface Servicio {
 interface Usuario { id: number; nombre: string; rol: string; }
 
 const ESTADOS = ["pendiente", "pagado", "anulado"];
-const COLORES = ["rojo","Azul","Verde","Amarillo"];
+const COLORES = ["roja","azul","verde","amarilla"];
 
 const EST: Record<string, { bg: string; color: string; border: string; label: string }> = {
   pagado:  { bg: "#DCFCE7", color: "#166534", border: "#BBF7D0", label: "Pagado"   },
