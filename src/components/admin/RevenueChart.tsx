@@ -57,7 +57,7 @@ export default function RevenueChart() {
   const totalNeto     = totalIngresos - totalGastos;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "28px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginBottom: "28px" }}>
 
       {/* Gráfico 1: Ingresos + Neto */}
       <div style={{ background: "#fff", border: "1px solid #E4E4E7", borderRadius: "14px", overflow: "hidden" }}>
