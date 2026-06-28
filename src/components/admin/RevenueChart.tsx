@@ -50,8 +50,6 @@ export default function RevenueChart() {
       .then(d => { setData(d); setLoading(false); });
   }, [period]);
 
-  console.log(data);
-
   const mapped = data.map(r => ({ ...r, fecha: fmt(r.fecha) }));
 
   const totalIngresos = data.reduce((s, r) => s + r.ingresos, 0);

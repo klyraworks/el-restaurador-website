@@ -16,7 +16,7 @@ interface Servicio {
   created_at: string;
   descripcion: string | null;
   mecanico: string;
-  monto_pendiente: string;
+  estado: string;
 }
 
 /* ─── icons ─── */
@@ -275,7 +275,7 @@ function ServiceCard({ s, index }: { s: Servicio; index: number }) {
   const fecha = new Date(s.created_at);
   const fechaStr = fecha.toLocaleDateString("es-EC", { day: "2-digit", month: "short", year: "numeric" });
   const horaStr = fecha.toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" });
-  const pendiente = parseFloat(s.monto_pendiente) > 0;
+  const pendiente = s.estado === "pendiente";
 
   return (
     <div style={{

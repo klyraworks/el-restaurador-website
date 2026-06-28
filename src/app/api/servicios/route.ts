@@ -1,20 +1,26 @@
-import {query} from "@/lib/db";
-import {NextResponse} from "next/server";
+import { query } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-    const rows = await query(`
-        SELECT DISTINCT tricimoto_color, tricimoto_num
-        FROM servicios
-        WHERE is_active = TRUE
-          AND estado != 'anulado'
-        ORDER BY tricimoto_color, tricimoto_num
-    `);
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const color = searchParams.get("color");
+  const num   = searchParams.get("num");
 
-    const colores: Record<string, string[]> = {};
-    for (const row of rows as { tricimoto_color: string; tricimoto_num: string }[]) {
-        if (!colores[row.tricimoto_color]) colores[row.tricimoto_color] = [];
-        colores[row.tricimoto_color].push(row.tricimoto_num);
-    }
+  if (!color || !num) {
+    return NextResponse.json({ error: "Parámetros requeridos" }, { status: 400 });
+  }
 
-    return NextResponse.json(colores);
+  const rows = await query(`
+    SELECT s.id, s.created_at, s.descripcion, s.estado, s.monto_pendiente,
+           u.nombre AS mecanico
+    FROM servicios s
+    JOIN usuarios u ON s.mecanico_id = u.id
+    WHERE s.tricimoto_color = $1
+      AND s.tricimoto_num   = $2
+      AND s.is_active = TRUE
+      AND s.estado != 'anulado'
+    ORDER BY s.created_at DESC
+  `, [color, num]);
+
+  return NextResponse.json(rows);
 }
