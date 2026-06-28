@@ -132,7 +132,7 @@ export default async function DashboardPage() {
       <div style={{ background: "#fff", border: "1px solid #E4E4E7", borderRadius: "14px", overflow: "hidden" }}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #E4E4E7", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#10121A" }}>Servicios recientes</h2>
-          <a href="/admin/servicios" style={{ fontSize: "12px", color: "#71717A", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+          <a href="/admin/(panel)/admin.css/servicios" style={{ fontSize: "12px", color: "#71717A", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
             Ver todos
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />

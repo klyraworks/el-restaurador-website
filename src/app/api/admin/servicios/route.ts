@@ -77,6 +77,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
 
+    const estadoFinal = (!monto_pendiente || monto_pendiente === 0) ? "pagado" : "pendiente";
+
     if (
         !tricimoto_num ||
         !tricimoto_color ||
@@ -90,7 +92,7 @@ export async function POST(req: NextRequest) {
         INSERT INTO servicios (tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id,
                                registrado_por, estado)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
-    `, [tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, session.user.id, estado ?? "pendiente"]);
+    `, [tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, session.user.id, estadoFinal]);
 
     await log("CREATE", "servicios", row!.id, `Servicio creado: ${tricimoto_color} #${tricimoto_num}`, session.user.id);
     return NextResponse.json({id: row!.id}, {status: 201});
@@ -102,6 +104,9 @@ export async function PATCH(req: NextRequest) {
 
     const body = await req.json();
     const {id, tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
+
+    const estadoFinal = (!monto_pendiente || monto_pendiente === 0) ? "pagado" : (estado ?? "pendiente");
+
     if (!id) return NextResponse.json({error: "ID requerido"}, {status: 400});
 
     await query(`

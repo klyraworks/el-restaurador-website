@@ -1,9 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { signOut } from "@/auth";
 import { logoutAction } from "@/app/admin/actions";
-
 
 const NAV_ITEMS = [
   {
@@ -78,9 +76,10 @@ const NAV_ITEMS = [
 interface SidebarProps {
   nombre: string;
   rol: string;
+  onCollapse?: () => void;
 }
 
-export default function Sidebar({ nombre, rol }: SidebarProps) {
+export default function Sidebar({ nombre, rol, onCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string, exact?: boolean) =>
@@ -174,43 +173,70 @@ export default function Sidebar({ nombre, rol }: SidebarProps) {
           padding: 8px 10px 4px;
           margin-top: 4px;
         }
+        .collapse-btn {
+          width: 26px;
+          height: 26px;
+          border: 1px solid #E4E4E7;
+          border-radius: 6px;
+          background: transparent;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #A1A1AA;
+          flex-shrink: 0;
+          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          padding: 0;
+        }
+        .collapse-btn:hover {
+          background: #F4F4F5;
+          color: #10121A;
+          border-color: #D4D4D8;
+        }
       `}</style>
 
       <aside style={{
-        position: "fixed",
-        top: 0, left: 0,
         width: "220px",
         height: "100vh",
         background: "#fff",
         borderRight: "1px solid #E4E4E7",
         display: "flex",
         flexDirection: "column",
-        zIndex: 20,
       }}>
 
-        {/* Logo */}
+        {/* Logo + collapse */}
         <div style={{
           padding: "16px",
           borderBottom: "1px solid #E4E4E7",
           display: "flex",
           alignItems: "center",
-          gap: "10px",
+          justifyContent: "space-between",
         }}>
-          <div style={{
-            width: "30px", height: "30px",
-            background: "#10121A",
-            borderRadius: "8px",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-            </svg>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+            <div style={{
+              width: "30px", height: "30px",
+              background: "#10121A",
+              borderRadius: "8px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <p style={{ fontSize: "13px", fontWeight: 700, color: "#10121A", letterSpacing: "-0.2px", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>El Restaurador</p>
+              <p style={{ fontSize: "10px", color: "#A1A1AA", marginTop: "1px", whiteSpace: "nowrap" }}>Panel de administración</p>
+            </div>
           </div>
-          <div>
-            <p style={{ fontSize: "13px", fontWeight: 700, color: "#10121A", letterSpacing: "-0.2px", lineHeight: 1.2 }}>El Restaurador</p>
-            <p style={{ fontSize: "10px", color: "#A1A1AA", marginTop: "1px" }}>Panel de administración</p>
-          </div>
+
+          {onCollapse && (
+            <button className="collapse-btn" onClick={onCollapse} aria-label="Colapsar menú">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Nav */}
