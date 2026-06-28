@@ -261,19 +261,19 @@ export default function GastosPage() {
     return (
         <>
             <style>{`
-        .ra-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #E4E4E7;background:transparent;color:#71717A;transition:background 0.12s,border-color 0.12s,color 0.12s}
-        .ra-edit:hover{background:#F4F4F5;border-color:#D4D4D8;color:#10121A}
-        .ra-del{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #FECDD3;background:transparent;color:#EF4444;transition:background 0.12s,border-color 0.12s}
-        .ra-del:hover{background:#FEF2F2;border-color:#FCA5A5}
-        .btn-primary:hover:not(:disabled){opacity:0.85}
-        .btn-ghost:hover{background:#F4F4F5;border-color:#D4D4D8;color:#3F3F46}
-        .btn-danger:hover:not(:disabled){opacity:0.85}
-        .pg-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #E4E4E7;border-radius:7px;background:transparent;font-size:12px;color:#3F3F46;cursor:pointer;font-family:inherit;transition:background 0.12s}
-        .pg-btn:hover:not(:disabled){background:#F4F4F5}
-        .pg-btn:disabled{opacity:0.35;cursor:not-allowed}
-        @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-      `}</style>
+              .ra-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #E4E4E7;background:transparent;color:#71717A;transition:background 0.12s,border-color 0.12s,color 0.12s}
+              .ra-edit:hover{background:#F4F4F5;border-color:#D4D4D8;color:#10121A}
+              .ra-del{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #FECDD3;background:transparent;color:#EF4444;transition:background 0.12s,border-color 0.12s}
+              .ra-del:hover{background:#FEF2F2;border-color:#FCA5A5}
+              .btn-primary:hover:not(:disabled){opacity:0.85}
+              .btn-ghost:hover{background:#F4F4F5;border-color:#D4D4D8;color:#3F3F46}
+              .btn-danger:hover:not(:disabled){opacity:0.85}
+              .pg-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #E4E4E7;border-radius:7px;background:transparent;font-size:12px;color:#3F3F46;cursor:pointer;font-family:inherit;transition:background 0.12s}
+              .pg-btn:hover:not(:disabled){background:#F4F4F5}
+              .pg-btn:disabled{opacity:0.35;cursor:not-allowed}
+              @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+              @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+            `}</style>
 
             <div style={{padding: "32px 28px 60px"}}>
                 {/* Header */}
