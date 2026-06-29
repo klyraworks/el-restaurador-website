@@ -10,6 +10,60 @@ const TRIKE_COLORS: Record<string, { hex: string; label: string }> = {
   azul:     { hex: "#2563eb", label: "Azul"     },
 };
 
+const TARIFAS: {
+  nombre: string;
+  precio: number;
+  nota?: string;
+  detalle?: { label: string; valor: number; adicional?: boolean }[];
+}[] = [
+  // ── Aceites
+  { nombre: "Cambio de aceite de motor", precio: 1 },
+  {
+    nombre: "Cambio de aceite completo",
+    precio: 2,
+    detalle: [
+      { label: "Aceite de motor",  valor: 1   },
+      { label: "Filtro de aceite", valor: 0.5 },
+      { label: "Aceite de caja",   valor: 0.5 },
+    ],
+  },
+  // ── Motor y carburador
+  { nombre: "Limpieza de carburador",          precio: 5  },
+  { nombre: "Limpieza de magneto",             precio: 5  },
+  { nombre: "Engrasado de motor de arranque",  precio: 10 },
+  { nombre: "Calibración de válvulas",         precio: 3 },
+  // ── Frenos
+  { nombre: "Regulación de freno",         precio: 1, nota: "Por cada rueda." },
+  { nombre: "Cambio de zapatas",           precio: 3, nota: "Por cada rueda." },
+  { nombre: "Cambio de cilindro de freno", precio: 3, nota: "Por cada rueda." },
+  { nombre: "Cambio de cañería",           precio: 3 },
+  // ── Transmisión y embrague
+  {
+    nombre: "Cambio de cables de marcha",
+    precio: 2,
+    nota: "Cada cable de marcha y el cable de embrague tiene un precio de $2.",
+  },
+  { nombre: "Reparación de embrague", precio: 20 },
+  // ── Suspensión
+  {
+    nombre: "Cambio de pin",
+    precio: 20,
+    nota: "Incluye engrasado y cambio de pistas superiores e inferiores si es necesario.",
+  },
+  { nombre: "Cambio de bocines", precio: 10 },
+  // ── Mantenimiento general
+  {
+    nombre: "Mantenimiento completo",
+    precio: 40,
+    nota: "Los siguientes trabajos son adicionales:",
+    detalle: [
+      { label: "Cambio de pin",                      valor: 5, adicional: true },
+      { label: "Engrasado del motor de arranque",    valor: 5, adicional: true },
+      { label: "Cambio de bocines de trinche",       valor: 5, adicional: true },
+    ],
+  },
+];
+
 /* ─── types ─── */
 interface Servicio {
   id: number;
@@ -48,6 +102,28 @@ const IconClock = ({ size = 11 }: { size?: number }) => (
 const IconChevronRight = ({ size = 12 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+const IconChevronDown = ({ size = 12, rotated = false }: { size?: number; rotated?: boolean }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: rotated ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease", flexShrink: 0 }}>
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+const IconList = ({ size = 13 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+    <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+  </svg>
+);
+const IconX = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+const IconSearch = ({ size = 13 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
 
@@ -179,7 +255,6 @@ function ServiceCard({ s, index }: { s: Servicio; index: number }) {
       padding: "18px 22px", animation: "fadeUp 0.3s ease both",
       animationDelay: `${index * 0.05}s`,
     }}>
-      {/* top row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#A1A1AA" }}>
           <IconCalendar size={12} />
@@ -189,13 +264,9 @@ function ServiceCard({ s, index }: { s: Servicio; index: number }) {
         </div>
         <EstadoBadge pendiente={pendiente} />
       </div>
-
-      {/* descripcion */}
       <p style={{ fontSize: "14px", fontWeight: 600, color: "#10121A", lineHeight: 1.5, marginBottom: "12px" }}>
         {s.descripcion ?? <span style={{ color: "#C4C4C8", fontStyle: "italic", fontWeight: 400 }}>Sin descripción</span>}
       </p>
-
-      {/* footer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#71717A" }}>
           <IconWrench size={12} />
@@ -221,7 +292,7 @@ function SkeletonCard({ delay = 0 }: { delay?: number }) {
   );
 }
 
-/* ─── label section ─── */
+/* ─── section label ─── */
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: "#A1A1AA", marginBottom: "10px" }}>
@@ -230,14 +301,120 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* ─── tariff item (accordion) ─── */
+function TariffItem({
+  tarifa, index, expanded, onToggle,
+}: {
+  tarifa: typeof TARIFAS[0];
+  index: number;
+  expanded: boolean;
+  onToggle: (i: number) => void;
+}) {
+  const hasDetail = !!(tarifa.detalle?.length || tarifa.nota);
+
+  return (
+    <div style={{ marginBottom: "3px" }}>
+      <button
+        onClick={() => hasDetail && onToggle(index)}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          padding: "10px 12px",
+          background: expanded ? "#F4F4F5" : "transparent",
+          border: "none",
+          borderRadius: expanded && hasDetail ? "10px 10px 0 0" : "10px",
+          cursor: hasDetail ? "pointer" : "default",
+          textAlign: "left",
+          transition: "background 0.15s",
+          fontFamily: "inherit",
+        }}
+      >
+        <span style={{ fontSize: "13px", fontWeight: 600, color: "#10121A", flex: 1, lineHeight: 1.4 }}>
+          {tarifa.nombre}
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+          <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "13px", color: "#10121A" }}>
+            ${tarifa.precio}
+          </span>
+          {hasDetail && <IconChevronDown rotated={expanded} />}
+        </div>
+      </button>
+
+      {expanded && hasDetail && (
+        <div style={{
+          background: "#F9F9FA",
+          borderRadius: "0 0 10px 10px",
+          borderTop: "1px solid #F0F0F0",
+          padding: "10px 12px 12px",
+        }}>
+          {tarifa.nota && (
+            <p style={{ fontSize: "11px", color: "#A1A1AA", marginBottom: tarifa.detalle?.length ? "8px" : 0, lineHeight: 1.5 }}>
+              {tarifa.nota}
+            </p>
+          )}
+          {tarifa.detalle?.map((d, j) => (
+            <div key={j} style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "5px 0",
+              borderBottom: j < (tarifa.detalle?.length ?? 0) - 1 ? "1px solid #F0F0F0" : "none",
+            }}>
+              <span style={{ fontSize: "12px", color: "#71717A" }}>{d.label}</span>
+              <span style={{ fontSize: "12px", fontFamily: "monospace", fontWeight: 700, color: "#10121A" }}>
+                {d.adicional ? "+" : ""}${d.valor}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── page ─── */
 export default function Home() {
-  const [colores, setColores]       = useState<Record<string, string[]>>({});
-  const [colorSel, setColorSel]     = useState<string>("");
-  const [numSel, setNumSel]         = useState<string>("");
-  const [servicios, setServicios]   = useState<Servicio[]>([]);
-  const [loading, setLoading]       = useState(false);
+  const [colores, setColores]         = useState<Record<string, string[]>>({});
+  const [colorSel, setColorSel]       = useState<string>("");
+  const [numSel, setNumSel]           = useState<string>("");
+  const [servicios, setServicios]     = useState<Servicio[]>([]);
+  const [loading, setLoading]         = useState(false);
   const [loadingInit, setLoadingInit] = useState(true);
+
+  const [tariffOpen, setTariffOpen]   = useState(false);
+  const [expanded, setExpanded]       = useState<Set<number>>(new Set());
+  const [search, setSearch]           = useState("");
+  const [listVisible, setListVisible] = useState(true);
+  const [filteredTarifas, setFilteredTarifas] = useState(
+    TARIFAS.map((t, i) => ({ ...t, originalIndex: i }))
+  );
+
+  const toggleExpanded = (i: number) => setExpanded(prev => {
+    const n = new Set(prev);
+    n.has(i) ? n.delete(i) : n.add(i);
+    return n;
+  });
+
+  useEffect(() => {
+    setListVisible(false);
+    const timer = setTimeout(() => {
+      const q = search.toLowerCase().trim();
+      setFilteredTarifas(
+        TARIFAS
+          .map((t, i) => ({ ...t, originalIndex: i }))
+          .filter(t =>
+            !q ||
+            t.nombre.toLowerCase().includes(q) ||
+            t.detalle?.some(d => d.label.toLowerCase().includes(q))
+          )
+      );
+      setListVisible(true);
+    }, 140);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     fetch("/api/tricimoto")
@@ -277,11 +454,9 @@ export default function Home() {
         html, body { background: #F4F4F5; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse  { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         button { font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button:active { opacity: 0.75 !important; }
         a { color: inherit; }
-
         .hero-grid {
           display: grid;
           grid-template-columns: 280px 1fr;
@@ -296,7 +471,7 @@ export default function Home() {
           animation: fadeUp 0.28s ease;
         }
         .klyra-link:hover { color: #10121A !important; }
-
+        .tariff-close-btn:hover { background: #F4F4F5 !important; color: #10121A !important; }
         @media (max-width: 680px) {
           .hero-grid { grid-template-columns: 1fr; gap: 20px; }
           .trike-wrap { max-width: 240px !important; margin: 0 auto; }
@@ -360,7 +535,7 @@ export default function Home() {
                   Consulta tu<br />tricimoto
                 </h1>
 
-                {/* Step 1: Color */}
+                {/* Step 1 */}
                 <div style={{ marginBottom: "28px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
                     <div style={{ width: "18px", height: "18px", borderRadius: "6px", background: colorSel ? accentHex : "#10121A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.2s" }}>
@@ -379,7 +554,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Step 2: Número */}
+                {/* Step 2 */}
                 <div style={{ opacity: colorSel ? 1 : 0.35, transition: "opacity 0.2s", pointerEvents: colorSel ? "auto" : "none" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
                     <div style={{ width: "18px", height: "18px", borderRadius: "6px", background: numSel ? accentHex : colorSel ? "#10121A" : "#D4D4D8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.2s" }}>
@@ -396,7 +571,6 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Prompt */}
                 {colorSel && numSel && !loading && (
                   <div style={{ marginTop: "20px", display: "flex", alignItems: "center", gap: "5px", color: "#A1A1AA", animation: "fadeUp 0.2s ease" }}>
                     <IconChevronRight size={12} />
@@ -469,6 +643,163 @@ export default function Home() {
           </span>
           <span style={{ fontSize: "11px", color: "#C4C4C8", fontFamily: "monospace" }}>Solo lectura</span>
         </footer>
+
+        {/* ── Tarifas: botón tab derecho ── */}
+        <button
+          onClick={() => setTariffOpen(true)}
+          aria-label="Ver tarifas"
+          style={{
+            position: "fixed",
+            top: "50%",
+            right: 0,
+            transform: `translateY(-50%) translateX(${tariffOpen ? "48px" : "0"})`,
+            opacity: tariffOpen ? 0 : 1,
+            pointerEvents: tariffOpen ? "none" : "auto",
+            transition: "transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.18s ease",
+            zIndex: 21,
+            background: "#10121A",
+            border: "none",
+            borderRadius: "8px 0 0 8px",
+            width: "32px",
+            height: "56px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            boxShadow: "-2px 0 14px rgba(0,0,0,0.18)",
+            padding: 0,
+          }}
+        >
+          <IconList size={13} />
+        </button>
+
+        {/* ── Tarifas: panel ── */}
+        <div style={{
+          position: "fixed",
+          top: 0, right: 0,
+          width: "min(280px, 92vw)",
+          height: "100vh",
+          transform: tariffOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)",
+          zIndex: 20,
+          background: "#fff",
+          borderLeft: "1px solid #E4E4E7",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: tariffOpen ? "-4px 0 24px rgba(0,0,0,0.08)" : "none",
+        }}>
+
+          {/* Header */}
+          <div style={{
+            padding: "16px",
+            borderBottom: "1px solid #E4E4E7",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+              <div style={{ width: "30px", height: "30px", background: "#10121A", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+                <IconList size={13} />
+              </div>
+              <div>
+                <p style={{ fontSize: "13px", fontWeight: 700, color: "#10121A", lineHeight: 1.2 }}>Tarifas</p>
+                <p style={{ fontSize: "10px", color: "#A1A1AA", marginTop: "1px" }}>Lista de servicios</p>
+              </div>
+            </div>
+            <button
+              className="tariff-close-btn"
+              onClick={() => setTariffOpen(false)}
+              aria-label="Cerrar"
+              style={{
+                width: "28px", height: "28px",
+                border: "1px solid #E4E4E7",
+                borderRadius: "7px",
+                background: "transparent",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#A1A1AA",
+                padding: 0,
+                transition: "background 0.15s, color 0.15s",
+                flexShrink: 0,
+              }}
+            >
+              <IconX size={12} />
+            </button>
+          </div>
+
+          {/* Buscador */}
+          <div style={{ padding: "10px 8px 4px", flexShrink: 0 }}>
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#A1A1AA", pointerEvents: "none", display: "flex" }}>
+                <IconSearch size={13} />
+              </span>
+              <input
+                type="text"
+                placeholder="Buscar servicio..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onFocus={e  => (e.target.style.borderColor = "#10121A")}
+                onBlur={e   => (e.target.style.borderColor = "#E4E4E7")}
+                style={{
+                  width: "100%",
+                  padding: "8px 32px 8px 32px",
+                  border: "1px solid #E4E4E7",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontFamily: "inherit",
+                  color: "#10121A",
+                  background: "#F9F9FA",
+                  outline: "none",
+                  transition: "border-color 0.15s",
+                }}
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  style={{
+                    position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", padding: "2px", cursor: "pointer",
+                    color: "#A1A1AA", display: "flex", alignItems: "center",
+                  }}
+                >
+                  <IconX size={11} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Lista */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "6px 8px 10px", opacity: listVisible ? 1 : 0, transition: "opacity 0.15s ease" }}>
+            {filteredTarifas.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "36px 16px" }}>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "#A1A1AA" }}>Sin resultados</p>
+                <p style={{ fontSize: "11px", color: "#C4C4C8", marginTop: "4px" }}>Intenta con otro término</p>
+              </div>
+            ) : (
+              filteredTarifas.map(tarifa => (
+                <TariffItem
+                  key={tarifa.originalIndex}
+                  tarifa={tarifa}
+                  index={tarifa.originalIndex}
+                  expanded={expanded.has(tarifa.originalIndex)}
+                  onToggle={toggleExpanded}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding: "12px 16px", borderTop: "1px solid #E4E4E7", flexShrink: 0 }}>
+            <p style={{ fontSize: "11px", color: "#C4C4C8", fontFamily: "monospace", textAlign: "center" }}>
+              Precios sujetos a cambios
+            </p>
+          </div>
+
+        </div>
 
       </div>
     </>

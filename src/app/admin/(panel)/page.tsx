@@ -199,7 +199,7 @@ export default async function DashboardPage() {
                     justifyContent: "space-between"
                 }}>
                     <h2 style={{fontSize: "14px", fontWeight: 700, color: "#10121A"}}>Servicios recientes</h2>
-                    <a href="/admin/(panel)/admin.css/servicios" style={{
+                    <a href="/admin/servicios" style={{
                         fontSize: "12px",
                         color: "#71717A",
                         textDecoration: "none",
