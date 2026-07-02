@@ -12,4 +12,4 @@ export async function requireRol(...roles: Rol[]) {
 }
 
 /** Shorthand para rutas solo-admin */
-export const requireAdmin = () => requireRol("admin");
+export const requireAdmin = () => requireRol("admin", "jefe");

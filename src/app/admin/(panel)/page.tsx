@@ -13,7 +13,7 @@ interface Stats {
 interface ServicioReciente {
     id: number;
     tricimoto_num: string;
-    tricimoto_color: string;
+    tricimoto_compania: string;
     descripcion: string | null;
     mecanico: string;
     estado: string;
@@ -26,8 +26,8 @@ const EST: Record<string, { bg: string; color: string; border: string; label: st
     anulado: {bg: "#F4F4F5", color: "#71717A", border: "#E4E4E7", label: "Anulado", dot: "#A1A1AA"},
 };
 
-const COLORES: Record<string, string> = {roja: "Rojo", azul: "Azul", verde: "Verde", amarilla: "Amarillo"};
-const COLORES_DOT: Record<string, string> = {roja: "#EF4444", azul: "#3B82F6", verde: "#22C55E", amarilla: "#EAB308"};
+const COMPANIAS: Record<string, string> = {"19 de Mayo": "19 de Mayo", "Comtrilamana": "Comtrilamana", "Quilotoa": "Quilotoa", "Patria Vuelve": "Patria Vuelve", "Taxsancar": "Taxsancar"};
+const COLORES_DOT: Record<string, string> = {"19 de Mayo": "#EF4444", "Comtrilamana": "#22C55E", "Quilotoa": "#EAB308", "Patria Vuelve": "#3B82F6", "Taxsancar": "#EF4444"};
 
 const STAT_ICONS: Record<string, React.ReactNode> = {
     "Total servicios": (
@@ -84,7 +84,7 @@ export default async function DashboardPage() {
     `);
 
     const recientes = await query<ServicioReciente>(`
-        SELECT s.id, s.tricimoto_num, s.tricimoto_color, s.descripcion, s.estado, s.created_at, u.nombre AS mecanico
+        SELECT s.id, s.tricimoto_num, s.tricimoto_compania, s.descripcion, s.estado, s.created_at, u.nombre AS mecanico
         FROM servicios s
                  JOIN usuarios u ON u.id = s.mecanico_id
         WHERE s.deleted_at IS NULL
@@ -245,8 +245,8 @@ export default async function DashboardPage() {
                                         <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
                       <span style={{
                           width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0,
-                          background: COLORES_DOT[s.tricimoto_color] ?? "#A1A1AA",
-                          boxShadow: `0 0 0 2px ${(COLORES_DOT[s.tricimoto_color] ?? "#A1A1AA")}30`,
+                          background: COLORES_DOT[s.tricimoto_compania] ?? "#A1A1AA",
+                          boxShadow: `0 0 0 2px ${(COLORES_DOT[s.tricimoto_compania] ?? "#A1A1AA")}30`,
                       }}/>
                                             <div>
                                                 <span style={{
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
                                                     fontSize: "11px",
                                                     color: "#A1A1AA",
                                                     marginLeft: "5px"
-                                                }}>{COLORES[s.tricimoto_color] ?? s.tricimoto_color}</span>
+                                                }}>{COMPANIAS[s.tricimoto_compania] ?? s.tricimoto_compania}</span>
                                             </div>
                                         </div>
                                     </td>

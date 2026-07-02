@@ -5,8 +5,8 @@ const globalForPg = globalThis as unknown as { pool?: Pool };
 export const pool =
   globalForPg.pool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    connectionString: process.env.NODE_ENV === "production" ? process.env.DATABASE_URL : process.env.LOCAL_DATABASE_URL,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
     max: 10,
   });
 

@@ -4,7 +4,7 @@ import {NextRequest, NextResponse} from "next/server";
 
 async function checkAdmin() {
     const session = await auth();
-    if (!session?.user || session.user.rol !== "admin") return null;
+    if (!session?.user || !["admin", "jefe"].includes(session.user.rol)) return null;
     return session;
 }
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         params.push(estado);
     }
     if (color) {
-        conditions.push(`s.tricimoto_color = $${i++}`);
+        conditions.push(`s.tricimoto_compania = $${i++}`);
         params.push(color);
     }
 
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
     const rows = await query(`
         SELECT s.id,
                s.tricimoto_num,
-               s.tricimoto_color,
+               s.tricimoto_compania,
                s.descripcion,
                s.monto_total,
                s.monto_pendiente,
@@ -75,13 +75,13 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({error: "No autorizado"}, {status: 401});
 
     const body = await req.json();
-    const {tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
+    const {tricimoto_num, tricimoto_compania, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
 
     const estadoFinal = (!monto_pendiente || monto_pendiente === 0) ? "pagado" : "pendiente";
 
     if (
         !tricimoto_num ||
-        !tricimoto_color ||
+        !tricimoto_compania ||
         monto_total === undefined || monto_total === null ||
         !mecanico_id
     ) {
@@ -89,12 +89,12 @@ export async function POST(req: NextRequest) {
     }
 
     const row = await queryOne<{ id: number }>(`
-        INSERT INTO servicios (tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id,
+        INSERT INTO servicios (tricimoto_num, tricimoto_compania, monto_total, monto_pendiente, descripcion, mecanico_id,
                                registrado_por, estado)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
-    `, [tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, session.user.id, estadoFinal]);
+    `, [tricimoto_num, tricimoto_compania, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, session.user.id, estadoFinal]);
 
-    await log("CREATE", "servicios", row!.id, `Servicio creado: ${tricimoto_color} #${tricimoto_num}`, session.user.id);
+    await log("CREATE", "servicios", row!.id, `Servicio creado: ${tricimoto_compania} #${tricimoto_num}`, session.user.id);
     return NextResponse.json({id: row!.id}, {status: 201});
 }
 
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest) {
     if (!session) return NextResponse.json({error: "No autorizado"}, {status: 401});
 
     const body = await req.json();
-    const {id, tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
+    const {id, tricimoto_num, tricimoto_compania, monto_total, monto_pendiente, descripcion, mecanico_id, estado} = body;
 
     const estadoFinal = (!monto_pendiente || monto_pendiente === 0) ? "pagado" : (estado ?? "pendiente");
 
@@ -112,7 +112,7 @@ export async function PATCH(req: NextRequest) {
     await query(`
         UPDATE servicios
         SET tricimoto_num=$1,
-            tricimoto_color=$2,
+            tricimoto_compania=$2,
             monto_total=$3,
             monto_pendiente=$4,
             descripcion=$5,
@@ -120,7 +120,7 @@ export async function PATCH(req: NextRequest) {
             estado=$7
         WHERE id = $8
           AND deleted_at IS NULL
-    `, [tricimoto_num, tricimoto_color, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, estado, id]);
+    `, [tricimoto_num, tricimoto_compania, monto_total, monto_pendiente, descripcion ?? null, mecanico_id, estado, id]);
 
     await log("UPDATE", "servicios", id, `Servicio actualizado`, session.user.id);
     return NextResponse.json({ok: true});

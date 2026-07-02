@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 async function checkAdmin() {
   const session = await auth();
-  if (!session?.user || session.user.rol !== "admin") return null;
+  if (!session?.user || !["admin", "jefe"].includes(session.user.rol)) return null;
   return session;
 }
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     SELECT
       p.id, p.monto, p.created_at,
       p.servicio_id,
-      s.tricimoto_num, s.tricimoto_color,
+      s.tricimoto_num, s.tricimoto_compania,
       u.nombre AS registrado_por
     FROM pagos p
     JOIN servicios s ON s.id = p.servicio_id

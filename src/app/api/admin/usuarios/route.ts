@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 async function checkAdmin() {
     const session = await auth();
-    if (!session?.user || session.user.rol !== "admin") return null;
+    if (!session?.user || !["admin", "jefe"].includes(session.user.rol)) return null;
     return session;
 }
 
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
     const session = await checkAdmin();
     if (!session) return NextResponse.json({error: "No autorizado"}, {status: 401});
 
-    const {telegram_id, username, nombre, rol, password} = await req.json();
-    if (!telegram_id || !nombre || !rol || !password) {
+    const {username, nombre, rol, password} = await req.json();
+    if (!username || !nombre || !rol || !password) {
         return NextResponse.json({error: "Faltan campos requeridos"}, {status: 400});
     }
 
@@ -52,9 +52,9 @@ export async function POST(req: NextRequest) {
     const password_hash = await bcrypt.hash(password, 12);
 
     const row = await queryOne<{ id: number }>(`
-        INSERT INTO usuarios (telegram_id, username, nombre, rol, password_hash)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id
-    `, [telegram_id, username ?? null, nombre, rol, password_hash]);
+        INSERT INTO usuarios (username, nombre, rol, password_hash)
+        VALUES ($1, $2, $3, $4) RETURNING id
+    `, [username, nombre, rol, password_hash]);
 
     await log("CREATE", "usuarios", row!.id, `Usuario creado: ${nombre} (${rol})`, session.user.id);
     return NextResponse.json({id: row!.id}, {status: 201});

@@ -4,10 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 
 /* ─── constants ─── */
 const TRIKE_COLORS: Record<string, { hex: string; label: string }> = {
-  verde:    { hex: "#16a34a", label: "Verde"    },
-  roja:     { hex: "#dc2626", label: "Roja"     },
-  amarilla: { hex: "#ca8a04", label: "Amarilla" },
-  azul:     { hex: "#2563eb", label: "Azul"     },
+  "Comtrilamana":  { hex: "#16a34a", label: "Comtrilamana" },
+  "19 de Mayo":    { hex: "#dc2626", label: "19 de Mayo" },
+  "Quilotoa":      { hex: "#ca8a04", label: "Quilotoa" },
+  "Patria Vuelve": { hex: "#2563eb", label: "Patria Vuelve" },
+  "Taxsancar":     { hex: "#dc2626", label: "Taxsancar" },
 };
 
 const TARIFAS: {
@@ -136,7 +137,9 @@ function TricimotoImage({ color }: { color: string }) {
     if (color !== prev) { setLoaded(false); setPrev(color); }
   }, [color, prev]);
 
-  const src = color ? `/tricimoto_${color}.png` : "/tricimoto_default.png";
+  // console.log(TRIKE_COLORS[color]?.label.toLowerCase().replace(/\s+/g, "-"))
+
+  const src = color ? `/tricimoto_${TRIKE_COLORS[color]?.label.toLowerCase().replace(/\s+/g, "-")}.png` : "/tricimoto_default.png";
 
   return (
     <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: "20px", overflow: "hidden", position: "relative", background: "#F4F4F5" }}>
@@ -541,7 +544,7 @@ export default function Home() {
                     <div style={{ width: "18px", height: "18px", borderRadius: "6px", background: colorSel ? accentHex : "#10121A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.2s" }}>
                       <span style={{ color: "#fff", fontSize: "9px", fontWeight: 800 }}>1</span>
                     </div>
-                    <SectionLabel>Selecciona el color</SectionLabel>
+                    <SectionLabel>Selecciona la compañía</SectionLabel>
                   </div>
                   {loadingInit ? (
                     <div style={{ display: "flex", gap: "8px" }}>

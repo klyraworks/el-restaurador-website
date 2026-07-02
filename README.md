@@ -35,7 +35,7 @@ taller-web/
 
 ## Funcionalidad
 
-- Selección de color de tricimoto → carga automática de números disponibles
+- Selección de compañía/color de tricimoto → carga automática de números disponibles
 - Selección de número → carga historial de servicios
 - Cards por servicio con: descripción, mecánico, monto total, monto pendiente, estado, fecha
 - Resumen estadístico: total de servicios, total cobrado, pendiente
@@ -87,7 +87,7 @@ Comparte la misma base de datos PostgreSQL del bot de Telegram. La web solo hace
 
 | Dato | Fuente |
 |---|---|
-| Tricimoto colores/números | Tabla `servicios` |
+| Tricimoto compañía/color | Tabla `servicios` |
 | Historial de servicios | Tabla `servicios` JOIN `usuarios` |
 
 ---

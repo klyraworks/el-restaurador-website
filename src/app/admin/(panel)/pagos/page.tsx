@@ -7,12 +7,19 @@ interface Pago {
     created_at: string;
     servicio_id: number;
     tricimoto_num: string;
-    tricimoto_color: string;
+    tricimoto_compania: string;
     registrado_por: string;
 }
 
-const COLORES_DOT: Record<string, string> = {roja: "#EF4444", azul: "#3B82F6", verde: "#22C55E", amarilla: "#EAB308"};
-const COLORES: Record<string, string> = {roja: "Rojo", azul: "Azul", verde: "Verde", amarilla: "Amarillo"};
+interface Servicio {
+    id: number;
+    tricimoto_num: string;
+    tricimoto_compania: string;
+    monto_pendiente: string;
+}
+
+const COMPANIAS: Record<string, string> = {"19 de Mayo": "19 de Mayo", "Comtrilamana": "Comtrilamana", "Quilotoa": "Quilotoa", "Patria Vuelve": "Patria Vuelve", "Taxsancar": "Taxsancar"};
+const COLORES_DOT: Record<string, string> = {"19 de Mayo": "#EF4444", "Comtrilamana": "#22C55E", "Quilotoa": "#EAB308", "Patria Vuelve": "#3B82F6", "Taxsancar": "#EF4444"};
 
 const S = {
     label: {
@@ -155,6 +162,16 @@ function FocusInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
     );
 }
 
+function Select({value, onChange, children}: {value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode}) {
+    const [focused, setFocused] = useState(false);
+    return (
+        <select value={value} onChange={onChange} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            style={{...S.input, appearance: "none", borderColor: focused ? "#10121A" : "#E4E4E7", boxShadow: focused ? "0 0 0 3px rgba(16,18,26,0.08)" : "none", cursor: "pointer"}}>
+            {children}
+        </select>
+    );
+}
+
 export default function PagosPage() {
     const [rows, setRows] = useState<Pago[]>([]);
     const [total, setTotal] = useState(0);
@@ -165,6 +182,10 @@ export default function PagosPage() {
     const [form, setForm] = useState({servicio_id: "", monto: ""});
     const [saving, setSaving] = useState(false);
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+    const [pagoModal, setPagoModal] = useState(false);
+    const [pendientes, setPendientes] = useState<Servicio[]>([]);
+    const [pagoForm, setPagoForm] = useState({ servicio_id: "", monto: "" });
+    const [selectedPago, setSelectedPago] = useState<Servicio | null>(null);
 
     const limit = 20;
     const totalPages = Math.ceil(total / limit);
@@ -207,20 +228,63 @@ export default function PagosPage() {
         fetchRows();
     }
 
+    useEffect(() => {
+      if (pagoModal) {
+        fetch("/api/admin/servicios?estado=pendiente&limit=100")
+          .then(r => r.json())
+          .then(d => setPendientes((d.rows ?? []).filter((s: Servicio) => Number(s.monto_pendiente) > 0)));
+      }
+    }, [pagoModal]);
+
+    function openPago() {
+      setPagoForm({ servicio_id: "", monto: "" });
+      setSelectedPago(null);
+      setPagoModal(true);
+    }
+
+    function handleServicioSelect(id: string) {
+      const s = pendientes.find(p => String(p.id) === id) ?? null;
+      setSelectedPago(s);
+      setPagoForm({ servicio_id: id, monto: "" });
+    }
+
+    async function handlePago(montoOverride?: number) {
+      const monto = montoOverride ?? parseFloat(pagoForm.monto);
+      if (!pagoForm.servicio_id || isNaN(monto) || monto <= 0) {
+        alert("Completa los campos requeridos.");
+        return;
+      }
+      setSaving(true);
+      const res = await fetch("/api/admin/pagos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ servicio_id: parseInt(pagoForm.servicio_id), monto }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error ?? "Error al guardar");
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+      setPagoModal(false);
+      fetchRows();
+    }
+
     return (
         <>
             <style>{`
-        .row-action-delete { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #FECDD3;background:transparent;color:#EF4444;transition:background 0.12s,border-color 0.12s; }
-        .row-action-delete:hover { background:#FEF2F2;border-color:#FCA5A5; }
-        .btn-primary:hover:not(:disabled){opacity:0.85}
-        .btn-ghost:hover{background:#F4F4F5;border-color:#D4D4D8;color:#3F3F46}
-        .btn-danger:hover:not(:disabled){opacity:0.85}
-        .pagination-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #E4E4E7;border-radius:7px;background:transparent;font-size:12px;color:#3F3F46;cursor:pointer;font-family:inherit;transition:background 0.12s;}
-        .pagination-btn:hover:not(:disabled){background:#F4F4F5}
-        .pagination-btn:disabled{opacity:0.35;cursor:not-allowed}
-        @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-      `}</style>
+                .row-action-delete { display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;border:1px solid #FECDD3;background:transparent;color:#EF4444;transition:background 0.12s,border-color 0.12s; }
+                .row-action-delete:hover { background:#FEF2F2;border-color:#FCA5A5; }
+                .btn-primary:hover:not(:disabled){opacity:0.85}
+                .btn-ghost:hover{background:#F4F4F5;border-color:#D4D4D8;color:#3F3F46}
+                .btn-danger:hover:not(:disabled){opacity:0.85}
+                .pagination-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid #E4E4E7;border-radius:7px;background:transparent;font-size:12px;color:#3F3F46;cursor:pointer;font-family:inherit;transition:background 0.12s;}
+                .pagination-btn:hover:not(:disabled){background:#F4F4F5}
+                .pagination-btn:disabled{opacity:0.35;cursor:not-allowed}
+                @keyframes modalIn{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+                @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+              `}</style>
 
             <div style={{padding: "32px 28px 60px"}}>
 
@@ -242,11 +306,8 @@ export default function PagosPage() {
                             {total > 0 ? `${total} cobros registrados` : "Historial de cobros registrados"}
                         </p>
                     </div>
-                    <button onClick={() => {
-                        setForm({servicio_id: "", monto: ""});
-                        setModal("create");
-                    }} className="btn-primary" style={S.primary}>
-                        <IconPlus/> Registrar pago
+                    <button onClick={openPago} className="btn-primary" style={S.primary}>
+                      <IconPlus/> Registrar pago
                     </button>
                 </div>
 
@@ -324,8 +385,8 @@ export default function PagosPage() {
                                                 height: "8px",
                                                 borderRadius: "50%",
                                                 flexShrink: 0,
-                                                background: COLORES_DOT[p.tricimoto_color] ?? "#A1A1AA",
-                                                boxShadow: `0 0 0 2px ${(COLORES_DOT[p.tricimoto_color] ?? "#A1A1AA")}30`
+                                                background: COLORES_DOT[p.tricimoto_compania] ?? "#A1A1AA",
+                                                boxShadow: `0 0 0 2px ${(COLORES_DOT[p.tricimoto_compania] ?? "#A1A1AA")}30`
                                             }}/>
                                                 <div>
                                                 <span style={{
@@ -337,7 +398,7 @@ export default function PagosPage() {
                                                         display: "block",
                                                         fontSize: "11px",
                                                         color: "#A1A1AA"
-                                                    }}>{COLORES[p.tricimoto_color] ?? p.tricimoto_color}</span>
+                                                    }}>{COMPANIAS[p.tricimoto_compania] ?? p.tricimoto_compania}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -446,15 +507,16 @@ export default function PagosPage() {
                         <div style={{padding: "20px 24px", display: "flex", flexDirection: "column", gap: "14px"}}>
                             <div>
                                 <label style={S.label}>ID del servicio</label>
-                                <FocusInput type="number" value={form.servicio_id}
-                                            onChange={e => setForm(f => ({...f, servicio_id: e.target.value}))}
-                                            placeholder="Ej: 42"/>
+                                <FocusInput type="number" value={form.servicio_id} onChange={e => setForm(f => ({...f, servicio_id: e.target.value}))} placeholder="Ej: 42"/>
                             </div>
                             <div>
                                 <label style={S.label}>Monto</label>
-                                <FocusInput type="number" step="0.01" value={form.monto}
-                                            onChange={e => setForm(f => ({...f, monto: e.target.value}))}
-                                            placeholder="0.00"/>
+                                <FocusInput
+                                    type="number" step="0.01"
+                                    placeholder={`Máx. ${Number(selectedPago?.monto_pendiente).toFixed(2)}`}
+                                    value={pagoForm.monto}
+                                    onChange={e => setPagoForm(p => ({...p, monto: e.target.value}))}
+                                />
                             </div>
                         </div>
                         <div style={{
@@ -541,6 +603,56 @@ export default function PagosPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {pagoModal && (
+              <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:50,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px",backdropFilter:"blur(2px)"}}
+                   onClick={e => { if (e.target === e.currentTarget) setPagoModal(false); }}>
+                <div style={{background:"#fff",borderRadius:"16px",width:"100%",maxWidth:"420px",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn 0.18s ease"}}>
+                  <div style={{padding:"20px 24px",borderBottom:"1px solid #E4E4E7",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <h2 style={{fontSize:"15px",fontWeight:700,color:"#10121A"}}>Registrar pago</h2>
+                    <button onClick={() => setPagoModal(false)} style={{background:"none",border:"none",cursor:"pointer",color:"#A1A1AA",display:"flex",padding:"2px"}}><IconX/></button>
+                  </div>
+                  <div style={{padding:"20px 24px",display:"flex",flexDirection:"column",gap:"14px"}}>
+                    <div>
+                      <label style={S.label}>Servicio pendiente</label>
+                      <Select value={pagoForm.servicio_id} onChange={e => handleServicioSelect(e.target.value)}>
+                        <option value="">Seleccionar servicio</option>
+                        {pendientes.map(s => (
+                          <option key={s.id} value={s.id}>
+                            {s.tricimoto_num} - {COMPANIAS[s.tricimoto_compania] ?? s.tricimoto_compania} · Debe ${Number(s.monto_pendiente).toFixed(2)}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    {selectedPago && (
+                      <>
+                        <div>
+                          <label style={S.label}>Monto del pago</label>
+                          <FocusInput
+                            type="number" step="0.01"
+                            placeholder={`Máx. ${Number(selectedPago.monto_pendiente).toFixed(2)}`}
+                            value={pagoForm.monto}
+                            onChange={e => setPagoForm(p => ({...p, monto: e.target.value}))}
+                          />
+                        </div>
+                        <button
+                          onClick={() => handlePago(Number(selectedPago.monto_pendiente))}
+                          className="btn-ghost" style={{...S.ghost, justifyContent:"center"}}
+                        >
+                          Pagar total (${Number(selectedPago.monto_pendiente).toFixed(2)})
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <div style={{padding:"16px 24px",borderTop:"1px solid #E4E4E7",display:"flex",justifyContent:"flex-end",gap:"8px"}}>
+                    <button onClick={() => setPagoModal(false)} className="btn-ghost" style={S.ghost}>Cancelar</button>
+                    <button onClick={() => handlePago()} disabled={saving || !selectedPago} className="btn-primary" style={{...S.primary, opacity: saving?0.6:1}}>
+                      {saving ? "Guardando..." : "Registrar pago"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
         </>
     );

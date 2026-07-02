@@ -4,7 +4,7 @@ import {useEffect, useState, useCallback} from "react";
 interface Servicio {
     id: number;
     tricimoto_num: string;
-    tricimoto_color: string;
+    tricimoto_compania: string;
     descripcion: string | null;
     monto_total: string;
     monto_pendiente: string;
@@ -21,7 +21,9 @@ interface Usuario {
 }
 
 const ESTADOS = ["pendiente", "pagado", "anulado"];
-const COLORES: Record<string, string> = {roja: "Rojo", azul: "Azul", verde: "Verde", amarilla: "Amarillo"};
+const COMPANIAS: Record<string, string> = {"19 de Mayo": "19 de Mayo", "Comtrilamana": "Comtrilamana", "Quilotoa": "Quilotoa", "Patria Vuelve": "Patria Vuelve", "Taxsancar": "Taxsancar"};
+const COLORES_DOT: Record<string, string> = {"19 de Mayo": "#EF4444", "Comtrilamana": "#22C55E", "Quilotoa": "#EAB308", "Patria Vuelve": "#3B82F6", "Taxsancar": "#EF4444"};
+
 
 const EST: Record<string, { bg: string; color: string; border: string; label: string; dot: string }> = {
     pagado: {bg: "#DCFCE7", color: "#166534", border: "#BBF7D0", label: "Pagado", dot: "#22C55E"},
@@ -29,9 +31,9 @@ const EST: Record<string, { bg: string; color: string; border: string; label: st
     anulado: {bg: "#F4F4F5", color: "#71717A", border: "#E4E4E7", label: "Anulado", dot: "#A1A1AA"},
 };
 
-const COLORES_DOT: Record<string, string> = {
-    roja: "#EF4444", azul: "#3B82F6", verde: "#22C55E", amarilla: "#EAB308",
-};
+// const COLORES_DOT: Record<string, string> = {
+//     roja: "#EF4444", azul: "#3B82F6", verde: "#22C55E", amarilla: "#EAB308",
+// };
 
 const S = {
     label: {
@@ -113,7 +115,7 @@ const S = {
 
 const DEF = {
     tricimoto_num: "",
-    tricimoto_color: "roja",
+    tricimoto_compania: "19 de Mayo",
     descripcion: "",
     monto_total: "",
     monto_pendiente: "",
@@ -322,7 +324,7 @@ export default function ServiciosPage() {
         setSelected(s);
         setForm({
             tricimoto_num: s.tricimoto_num,
-            tricimoto_color: s.tricimoto_color,
+            tricimoto_compania: s.tricimoto_compania,
             descripcion: s.descripcion ?? "",
             monto_total: s.monto_total,
             monto_pendiente: s.monto_pendiente,
@@ -338,7 +340,7 @@ export default function ServiciosPage() {
         const monto_pendiente = parseFloat(form.monto_pendiente || "0");
         const mecanico_id = parseInt(form.mecanico_id);
 
-        if (!form.tricimoto_num || !form.tricimoto_color || isNaN(monto_total) || !mecanico_id) {
+        if (!form.tricimoto_num || !form.tricimoto_compania || isNaN(monto_total) || !mecanico_id) {
             alert("Completa los campos requeridos.");
             setSaving(false);
             return;
@@ -459,8 +461,8 @@ export default function ServiciosPage() {
                         setFiltroColor(e.target.value);
                         setPage(1);
                     }} style={{width: "160px"}}>
-                        <option value="">Todos los colores</option>
-                        {Object.entries(COLORES).map(([key, label]) => (
+                        <option value="">Todas las compañias</option>
+                        {Object.entries(COMPANIAS).map(([key, label]) => (
                             <option key={key} value={key}>{label}</option>
                         ))}
                     </Select>
@@ -481,7 +483,7 @@ export default function ServiciosPage() {
                         <table style={{width: "100%", borderCollapse: "collapse"}}>
                         <thead>
                         <tr style={{borderBottom: "1px solid #E4E4E7", background: "#FAFAFA"}}>
-                            {["#", "Tricimoto", "Mecánico", "Montos", "Estado", "Fecha", ""].map(h => (
+                            {["#", "Tricimoto", "Descripción", "Montos", "Estado", "Fecha", ""].map(h => (
                                 <th key={h} style={S.th}>{h}</th>
                             ))}
                         </tr>
@@ -546,8 +548,8 @@ export default function ServiciosPage() {
                                         <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
                         <span style={{
                             width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0,
-                            background: COLORES_DOT[s.tricimoto_color] ?? "#A1A1AA",
-                            boxShadow: `0 0 0 2px ${(COLORES_DOT[s.tricimoto_color] ?? "#A1A1AA")}30`,
+                            background: COLORES_DOT[s.tricimoto_compania] ?? "#A1A1AA",
+                            boxShadow: `0 0 0 2px ${(COLORES_DOT[s.tricimoto_compania] ?? "#A1A1AA")}30`,
                         }}/>
                                             <div>
                                                 <span style={{
@@ -559,11 +561,11 @@ export default function ServiciosPage() {
                                                     fontSize: "11px",
                                                     color: "#A1A1AA",
                                                     marginLeft: "5px"
-                                                }}>{COLORES[s.tricimoto_color] ?? s.tricimoto_color}</span>
+                                                }}>{COMPANIAS[s.tricimoto_compania] ?? s.tricimoto_compania}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td style={{...S.td, fontSize: "13px", color: "#3F3F46"}}>{s.mecanico}</td>
+                                    <td style={{...S.td, fontSize: "13px", color: "#3F3F46", maxWidth: "250px"}}>{s.descripcion?.toUpperCase()}</td>
                                     <td style={S.td}>
                                         <span style={{
                                             fontSize: "13px",
@@ -714,10 +716,10 @@ export default function ServiciosPage() {
                                     <Input {...field("tricimoto_num")} placeholder="001"/>
                                 </div>
                                 <div>
-                                    <label style={S.label}>Color</label>
-                                    <Select {...field("tricimoto_color")}
-                                            onChange={e => setForm(p => ({...p, tricimoto_color: e.target.value}))}>
-                                        {Object.entries(COLORES).map(([key, label]) => (
+                                    <label style={S.label}>Compañía</label>
+                                    <Select {...field("tricimoto_compania")}
+                                            onChange={e => setForm(p => ({...p, tricimoto_compania: e.target.value}))}>
+                                        {Object.entries(COMPANIAS).map(([key, label]) => (
                                             <option key={key} value={key}>{label}</option>
                                         ))}
                                     </Select>
@@ -823,7 +825,7 @@ export default function ServiciosPage() {
                             <div style={{flexShrink: 0, marginTop: "1px"}}><IconAlertTriangle/></div>
                             <p style={{fontSize: "13px", color: "#3F3F46", lineHeight: "1.65"}}>
                                 ¿Eliminar el servicio de la tricimoto <strong
-                                style={{color: "#10121A"}}>{selected.tricimoto_num} · {COLORES[selected.tricimoto_color] ?? selected.tricimoto_color}</strong>?
+                                style={{color: "#10121A"}}>{selected.tricimoto_num} · {COMPANIAS[selected.tricimoto_compania] ?? selected.tricimoto_compania}</strong>?
                                 Esta acción no se puede deshacer.
                             </p>
                         </div>

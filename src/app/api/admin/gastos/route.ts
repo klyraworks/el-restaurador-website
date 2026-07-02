@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 async function checkAdmin() {
   const session = await auth();
-  if (!session?.user || session.user.rol !== "admin") return null;
+  if (!session?.user || !["admin", "jefe"].includes(session.user.rol)) return null;
   return session;
 }
 

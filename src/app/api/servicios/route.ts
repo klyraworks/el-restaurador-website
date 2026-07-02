@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
            u.nombre AS mecanico
     FROM servicios s
     JOIN usuarios u ON s.mecanico_id = u.id
-    WHERE s.tricimoto_color = $1
+    WHERE s.tricimoto_compania = $1
       AND s.tricimoto_num   = $2
       AND s.is_active = TRUE
       AND s.estado != 'anulado'

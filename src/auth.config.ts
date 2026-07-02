@@ -15,7 +15,7 @@ export const authConfig: NextAuthConfig = {
 
             if (isProtected) {
                 if (!auth) return false;
-                if (rol !== "admin") return false;
+                if (pathname.startsWith("/admin") && pathname !== "/admin/login" && rol !== "admin" && rol !== "jefe") return false;
             }
 
             return true;
