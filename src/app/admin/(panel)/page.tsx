@@ -1,6 +1,9 @@
 import {requireAdmin} from "@/lib/auth-helpers";
 import {query} from "@/lib/db";
 import RevenueChart from "@/components/admin/RevenueChart";
+import CompanyBreakdown from "@/components/admin/CompanyBreakdown";
+import TopDeudores from "@/components/admin/TopDeudores";
+import RankingCard from "@/components/admin/RankingCard";
 
 interface Stats {
     total_servicios: string;
@@ -8,6 +11,27 @@ interface Stats {
     total_cobrado: string;
     total_gastos: string;
     total_adelantos: string;
+    ticket_promedio: string;
+}
+
+interface CompaniaStat {
+    compania: string;
+    total_servicios: string;
+    cobrado: string;
+    pendiente: string;
+}
+
+interface Deudor {
+    tricimoto_num: string;
+    tricimoto_compania: string;
+    pendiente: string;
+    servicios_pendientes: string;
+}
+
+interface FrecuenciaStat {
+    label: string;
+    sublabel?: string;
+    value: number;
 }
 
 interface ServicioReciente {
@@ -73,14 +97,36 @@ export default async function DashboardPage() {
     await requireAdmin();
 
     const [stats] = await query<Stats>(`
-        SELECT COUNT(*)                                                                                    AS total_servicios,
-               COUNT(*)                                                                                       FILTER (WHERE estado = 'pendiente')                     AS servicios_pendientes, COALESCE(SUM(monto_total - monto_pendiente), 0) AS total_cobrado,
-               COALESCE((SELECT SUM(monto) FROM gastos WHERE tipo = 'gasto' AND deleted_at IS NULL),
-                        0)                                                                                 AS total_gastos,
-               COALESCE((SELECT SUM(monto) FROM gastos WHERE tipo = 'adelanto' AND deleted_at IS NULL),
-                        0)                                                                                 AS total_adelantos
+        SELECT COUNT(*)                                                     AS total_servicios,
+               COUNT(*) FILTER (WHERE estado = 'pendiente')                  AS servicios_pendientes,
+               COALESCE(SUM(monto_total - monto_pendiente), 0)               AS total_cobrado,
+               COALESCE(AVG(monto_total), 0)                                 AS ticket_promedio,
+               COALESCE((SELECT SUM(monto) FROM gastos WHERE tipo = 'gasto' AND deleted_at IS NULL), 0) AS total_gastos,
+               COALESCE((SELECT SUM(monto) FROM gastos WHERE tipo = 'adelanto' AND deleted_at IS NULL), 0) AS total_adelantos
         FROM servicios
         WHERE deleted_at IS NULL
+    `);
+
+    const porCompania = await query<CompaniaStat>(`
+        SELECT tricimoto_compania                                    AS compania,
+               COUNT(*)                                               AS total_servicios,
+               COALESCE(SUM(monto_total - monto_pendiente), 0)        AS cobrado,
+               COALESCE(SUM(monto_pendiente), 0)                      AS pendiente
+        FROM servicios
+        WHERE deleted_at IS NULL
+        GROUP BY tricimoto_compania
+        ORDER BY cobrado DESC
+    `);
+
+    const deudores = await query<Deudor>(`
+        SELECT tricimoto_num, tricimoto_compania,
+               SUM(monto_pendiente)                                   AS pendiente,
+               COUNT(*) FILTER (WHERE monto_pendiente > 0)            AS servicios_pendientes
+        FROM servicios
+        WHERE deleted_at IS NULL AND monto_pendiente > 0
+        GROUP BY tricimoto_num, tricimoto_compania
+        ORDER BY pendiente DESC
+        LIMIT 8
     `);
 
     const recientes = await query<ServicioReciente>(`
@@ -91,6 +137,24 @@ export default async function DashboardPage() {
         ORDER BY s.created_at DESC LIMIT 8
     `);
 
+    const companiasFrecuentes = await query<{compania: string; total: string}>(`
+        SELECT tricimoto_compania AS compania, COUNT(*) AS total
+        FROM servicios WHERE deleted_at IS NULL
+        GROUP BY tricimoto_compania ORDER BY total DESC LIMIT 5
+    `);
+
+    const tricimotosFrecuentes = await query<{tricimoto_num: string; tricimoto_compania: string; total: string}>(`
+        SELECT tricimoto_num, tricimoto_compania, COUNT(*) AS total
+        FROM servicios WHERE deleted_at IS NULL
+        GROUP BY tricimoto_num, tricimoto_compania ORDER BY total DESC LIMIT 6
+    `);
+
+    const tricimotosTopFacturacion = await query<{tricimoto_num: string; tricimoto_compania: string; total: string}>(`
+        SELECT tricimoto_num, tricimoto_compania, SUM(monto_total) AS total
+        FROM servicios WHERE deleted_at IS NULL
+        GROUP BY tricimoto_num, tricimoto_compania ORDER BY total DESC LIMIT 6
+    `);
+
     const netBalance = Number(stats.total_cobrado) - Number(stats.total_gastos) - Number(stats.total_adelantos);
 
     const statCards = [
@@ -99,6 +163,7 @@ export default async function DashboardPage() {
         {label: "Total cobrado", value: Number(stats.total_cobrado).toFixed(2), prefix: "$", suffix: ""},
         {label: "Total gastos", value: Number(stats.total_gastos).toFixed(2), prefix: "$", suffix: ""},
         {label: "Adelantos", value: Number(stats.total_adelantos).toFixed(2), prefix: "$", suffix: ""},
+        {label: "Ticket promedio", value: Number(stats.ticket_promedio).toFixed(2), prefix: "$", suffix: ""},
     ];
 
     const th = {
@@ -188,6 +253,41 @@ export default async function DashboardPage() {
             </div>
 
             <RevenueChart/>
+            <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "12px", marginBottom: "28px"}}>
+                <CompanyBreakdown data={porCompania}/>
+                <TopDeudores data={deudores}/>
+            </div>
+
+            <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "12px", marginBottom: "28px"}}>
+            <RankingCard
+                title="Compañías más frecuentes"
+                icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+                items={companiasFrecuentes.map((c, i) => ({
+                    rank: i + 1, label: c.compania, value: `${c.total} serv.`,
+                    dotColor: COLORES_DOT[c.compania] ?? "#A1A1AA",
+                    percent: (Number(c.total) / Number(companiasFrecuentes[0].total)) * 100,
+                }))}
+            />
+            <RankingCard
+                title="Tricimotos más frecuentes"
+                icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                items={tricimotosFrecuentes.map((t, i) => ({
+                    rank: i + 1, label: t.tricimoto_num, sublabel: t.tricimoto_compania, value: `${t.total} serv.`,
+                    dotColor: COLORES_DOT[t.tricimoto_compania] ?? "#A1A1AA",
+                    percent: (Number(t.total) / Number(tricimotosFrecuentes[0].total)) * 100,
+                }))}
+            />
+            <RankingCard
+                title="Mayor facturación por tricimoto"
+                icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                barColor="#166534"
+                items={tricimotosTopFacturacion.map((t, i) => ({
+                    rank: i + 1, label: t.tricimoto_num, sublabel: t.tricimoto_compania, value: `$${Number(t.total).toFixed(2)}`,
+                    dotColor: COLORES_DOT[t.tricimoto_compania] ?? "#A1A1AA",
+                    percent: (Number(t.total) / Number(tricimotosTopFacturacion[0].total)) * 100,
+                }))}
+            />
+        </div>
 
             {/* Servicios recientes */}
             <div style={{background: "#fff", border: "1px solid #E4E4E7", borderRadius: "14px", overflow: "clip"}}>

@@ -245,6 +245,17 @@ function EstadoBadge({ pendiente }: { pendiente: boolean }) {
   );
 }
 
+/* ─── parse descripcion ─── */
+
+function parseDescripcion(desc: string | null): string[] {
+  if (!desc) return [];
+  return desc
+    .split("+")
+    .map(s => s.trim())
+    .filter(s => s.length > 2 && !/^\d+$/.test(s) && s.toLowerCase() !== "sin descripción")
+    .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase());
+}
+
 /* ─── service card ─── */
 function ServiceCard({ s, index }: { s: Servicio; index: number }) {
   const fecha     = new Date(s.created_at);
@@ -267,9 +278,26 @@ function ServiceCard({ s, index }: { s: Servicio; index: number }) {
         </div>
         <EstadoBadge pendiente={pendiente} />
       </div>
-      <p style={{ fontSize: "14px", fontWeight: 600, color: "#10121A", lineHeight: 1.5, marginBottom: "12px" }}>
-        {s.descripcion ?? <span style={{ color: "#C4C4C8", fontStyle: "italic", fontWeight: 400 }}>Sin descripción</span>}
-      </p>
+        {(() => {
+            const items = parseDescripcion(s.descripcion);
+            return items.length > 0 ? (
+                <div style={{display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px"}}>
+                    {items.map((item, idx) => (
+                        <span key={idx} style={{
+                            fontSize: "12px", fontWeight: 600, color: "#3F3F46",
+                            background: "#F4F4F5", border: "1px solid #E4E4E7",
+                            borderRadius: "7px", padding: "4px 10px", lineHeight: 1.3,
+                        }}>
+          {item}
+        </span>
+                    ))}
+                </div>
+            ) : (
+                <p style={{fontSize: "13px", color: "#C4C4C8", fontStyle: "italic", marginBottom: "12px"}}>
+                    Sin descripción
+                </p>
+            );
+        })()}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#71717A" }}>
           <IconWrench size={12} />
