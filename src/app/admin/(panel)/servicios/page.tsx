@@ -21,8 +21,8 @@ interface Usuario {
 }
 
 const ESTADOS = ["pendiente", "pagado", "anulado"];
-const COMPANIAS: Record<string, string> = {"19 de Mayo": "19 de Mayo", "Comtrilamana": "Comtrilamana", "Quilotoa": "Quilotoa", "Patria Vuelve": "Patria Vuelve", "Taxsancar": "Taxsancar"};
-const COLORES_DOT: Record<string, string> = {"19 de Mayo": "#EF4444", "Comtrilamana": "#22C55E", "Quilotoa": "#EAB308", "Patria Vuelve": "#3B82F6", "Taxsancar": "#EF4444"};
+const COMPANIAS: Record<string, string> = {"19 de Mayo": "19 de Mayo", "Comtrilamana": "Comtrilamana", "Quilotoa": "Quilotoa", "Patria Vuelve": "Patria Vuelve", "Taxsancar": "Taxsancar", "Transtrival":"Transtrival"};
+const COLORES_DOT: Record<string, string> = {"19 de Mayo": "#EF4444", "Comtrilamana": "#22C55E", "Quilotoa": "#EAB308", "Patria Vuelve": "#3B82F6", "Taxsancar": "#EF4444", "Transtrival": "#EF4444"};
 
 
 const EST: Record<string, { bg: string; color: string; border: string; label: string; dot: string }> = {
@@ -183,11 +183,12 @@ const IconAlertTriangle = () => (
 );
 
 // ── Componente Select custom (wrapper con focus ring) ──────────────────────────
-function Select({value, onChange, children, style}: {
+function Select({value, onChange, children, style, disabled}: {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     children: React.ReactNode;
     style?: React.CSSProperties
+    disabled?: boolean;
 }) {
     const [focused, setFocused] = useState(false);
     return (
@@ -195,6 +196,7 @@ function Select({value, onChange, children, style}: {
             <select
                 value={value}
                 onChange={onChange}
+                disabled={disabled}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 style={{
@@ -282,12 +284,17 @@ export default function ServiciosPage() {
     const [loading, setLoading] = useState(false);
     const [filtroEstado, setFiltroEstado] = useState("");
     const [filtroColor, setFiltroColor] = useState("");
+    const [filtroNumero, setFiltroNumero] = useState("");
+    const [unidades, setUnidades] = useState<string[]>([]);
     const [modal, setModal] = useState<"create" | "edit" | "delete" | null>(null);
     const [selected, setSelected] = useState<Servicio | null>(null);
     const [mecanicos, setMecanicos] = useState<Usuario[]>([]);
     const [form, setForm] = useState({...DEF});
     const [saving, setSaving] = useState(false);
     const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+    const [filtroFecha, setFiltroFecha] = useState("");
+    const [filtroDesde, setFiltroDesde] = useState("");
+    const [filtroHasta, setFiltroHasta] = useState("");
 
     const limit = 20;
     const totalPages = Math.ceil(total / limit);
@@ -297,12 +304,19 @@ export default function ServiciosPage() {
         const p = new URLSearchParams({page: String(page)});
         if (filtroEstado) p.set("estado", filtroEstado);
         if (filtroColor) p.set("color", filtroColor);
+        if (filtroNumero) p.set("numero", filtroNumero);
+        if (filtroFecha) {
+            p.set("fecha", filtroFecha);
+        } else {
+            if (filtroDesde) p.set("desde", filtroDesde);
+            if (filtroHasta) p.set("hasta", filtroHasta);
+        }
         const res = await fetch(`/api/admin/servicios?${p}`);
         const data = await res.json();
         setRows(data.rows ?? []);
         setTotal(data.total ?? 0);
         setLoading(false);
-    }, [page, filtroEstado, filtroColor]);
+    }, [page, filtroEstado, filtroColor, filtroNumero, filtroFecha, filtroDesde, filtroHasta]);
 
     useEffect(() => {
         fetchRows();
@@ -313,6 +327,18 @@ export default function ServiciosPage() {
             fetch("/api/admin/usuarios").then(r => r.json()).then(d => setMecanicos(d.rows ?? []));
         }
     }, [modal]);
+
+    useEffect(() => {
+        if (!filtroColor) {
+            setUnidades([]);
+            setFiltroNumero("");
+            return;
+        }
+        fetch(`/api/admin/unidades?compania=${encodeURIComponent(filtroColor)}`)
+            .then(r => r.json())
+            .then(d => setUnidades(d.rows ?? []));
+        setFiltroNumero("");
+    }, [filtroColor]);
 
     function openCreate() {
         setForm({...DEF});
@@ -466,10 +492,56 @@ export default function ServiciosPage() {
                             <option key={key} value={key}>{label}</option>
                         ))}
                     </Select>
-                    {(filtroEstado || filtroColor) && (
+                    <Select value={filtroNumero} onChange={e => {
+                        setFiltroNumero(e.target.value);
+                        setPage(1);
+                    }}
+                            style={{width: "160px"}} disabled={!filtroColor}>
+                        <option value="">Todas las unidades</option>
+                        {unidades.map(u => <option key={u} value={u}>{u}</option>)}
+                    </Select>
+                    <Input
+                        type="date"
+                        value={filtroFecha}
+                        onChange={e => {
+                            setFiltroFecha(e.target.value);
+                            setFiltroDesde("");
+                            setFiltroHasta("");
+                            setPage(1);
+                        }}
+                        style={{width: "150px"}}
+                    />
+                    <span style={{fontSize: "12px", color: "#A1A1AA"}}>o rango:</span>
+                    <Input
+                        type="date"
+                        value={filtroDesde}
+                        disabled={!!filtroFecha}
+                        onChange={e => {
+                            setFiltroDesde(e.target.value);
+                            setFiltroFecha("");
+                            setPage(1);
+                        }}
+                        style={{width: "150px"}}
+                    />
+                    <Input
+                        type="date"
+                        value={filtroHasta}
+                        disabled={!!filtroFecha}
+                        onChange={e => {
+                            setFiltroHasta(e.target.value);
+                            setFiltroFecha("");
+                            setPage(1);
+                        }}
+                        style={{width: "150px"}}
+                    />
+                    {(filtroEstado || filtroColor || filtroNumero || filtroFecha || filtroDesde || filtroHasta) && (
                         <button className="btn-ghost" onClick={() => {
                             setFiltroEstado("");
                             setFiltroColor("");
+                            setFiltroNumero("");
+                            setFiltroFecha("");
+                            setFiltroDesde("");
+                            setFiltroHasta("");
                             setPage(1);
                         }} style={{...S.ghost, padding: "7px 12px", fontSize: "12px"}}>
                             <IconX/> Limpiar

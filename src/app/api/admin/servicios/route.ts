@@ -26,6 +26,10 @@ export async function GET(req: NextRequest) {
     const offset = (page - 1) * limit;
     const estado = searchParams.get("estado") ?? "";
     const color = searchParams.get("color") ?? "";
+    const numero = searchParams.get("numero") ?? "";
+    const fecha = searchParams.get("fecha") ?? "";
+    const desde = searchParams.get("desde") ?? "";
+    const hasta = searchParams.get("hasta") ?? "";
 
     const conditions = ["s.deleted_at IS NULL"];
     const params: unknown[] = [];
@@ -37,6 +41,24 @@ export async function GET(req: NextRequest) {
     if (color) {
         conditions.push(`s.tricimoto_compania = $${i++}`);
         params.push(color);
+    }
+    if (numero) {
+        conditions.push(`s.tricimoto_num = $${i++}`);
+        params.push(numero);
+    }
+
+    if (fecha) {
+        conditions.push(`s.created_at::date = $${i++}`);
+        params.push(fecha);
+    } else {
+        if (desde) {
+            conditions.push(`s.created_at::date >= $${i++}`);
+            params.push(desde);
+        }
+        if (hasta) {
+            conditions.push(`s.created_at::date <= $${i++}`);
+            params.push(hasta);
+        }
     }
 
     const where = conditions.join(" AND ");

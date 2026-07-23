@@ -3,12 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 
 /* ─── constants ─── */
-const TRIKE_COLORS: Record<string, { hex: string; label: string }> = {
-  "Comtrilamana":  { hex: "#16a34a", label: "Comtrilamana" },
-  "19 de Mayo":    { hex: "#dc2626", label: "19 de Mayo" },
-  "Quilotoa":      { hex: "#ca8a04", label: "Quilotoa" },
-  "Patria Vuelve": { hex: "#2563eb", label: "Patria Vuelve" },
-  "Taxsancar":     { hex: "#dc2626", label: "Taxsancar" },
+const TRIKE_COLORS: Record<string, { hex: string; label: string, src: string }> = {
+  "Comtrilamana":  { hex: "#16a34a", label: "Comtrilamana",   src: "tricimoto_comtrilamana" },
+  "19 de Mayo":    { hex: "#dc2626", label: "19 de Mayo",     src: "tricimoto_19demayo" },
+  "Quilotoa":      { hex: "#ca8a04", label: "Quilotoa",       src: "tricimoto_quilotoa" },
+  "Patria Vuelve": { hex: "#2563eb", label: "Patria Vuelve",  src: "tricimoto_patriavuelve" },
+  "Taxsancar":     { hex: "#dc2626", label: "Taxsancar",      src: "tricimoto_taxsancar" },
+  "Transtrival":  { hex: "#dc2626", label:  "Transtrival",    src: "tricimoto_transtrival" },
 };
 
 const TARIFAS: {
@@ -151,6 +152,7 @@ const IconSearch = ({ size = 13 }: { size?: number }) => (
 
 /* ─── tricimoto image ─── */
 function TricimotoImage({ color }: { color: string }) {
+  // console.log(TRIKE_COLORS[color]?.src)
   const [loaded, setLoaded] = useState(false);
   const [prev, setPrev]     = useState(color);
 
@@ -160,7 +162,7 @@ function TricimotoImage({ color }: { color: string }) {
 
   // console.log(TRIKE_COLORS[color]?.label.toLowerCase().replace(/\s+/g, "-"))
 
-  const src = color ? `/tricimoto_${TRIKE_COLORS[color]?.label.toLowerCase().replace(/\s+/g, "-")}.png` : "/tricimoto_default.png";
+  const src = color ? `/${TRIKE_COLORS[color]?.src}.png` : "/tricimoto_default.png";
 
   return (
     <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: "20px", overflow: "hidden", position: "relative", background: "#F4F4F5" }}>
