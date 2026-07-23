@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 /* ─── constants ─── */
 const TRIKE_COLORS: Record<string, { hex: string; label: string, src: string }> = {
@@ -152,17 +152,22 @@ const IconSearch = ({ size = 13 }: { size?: number }) => (
 
 /* ─── tricimoto image ─── */
 function TricimotoImage({ color }: { color: string }) {
-  // console.log(TRIKE_COLORS[color]?.src)
   const [loaded, setLoaded] = useState(false);
-  const [prev, setPrev]     = useState(color);
-
-  useEffect(() => {
-    if (color !== prev) { setLoaded(false); setPrev(color); }
-  }, [color, prev]);
-
-  // console.log(TRIKE_COLORS[color]?.label.toLowerCase().replace(/\s+/g, "-"))
+  const [prevSrc, setPrevSrc] = useState("");
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const src = color ? `/${TRIKE_COLORS[color]?.src}.png` : "/tricimoto_default.png";
+
+  useEffect(() => {
+    if (src !== prevSrc) {
+      setLoaded(false);
+      setPrevSrc(src);
+    }
+  }, [src, prevSrc]);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) setLoaded(true);
+  }, [src]);
 
   return (
     <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: "20px", overflow: "hidden", position: "relative", background: "#F4F4F5" }}>
@@ -170,10 +175,12 @@ function TricimotoImage({ color }: { color: string }) {
         <div style={{ position: "absolute", inset: 0, borderRadius: "20px", animation: "pulse 1.4s infinite", background: "linear-gradient(90deg,#F4F4F5 25%,#EDEDEE 50%,#F4F4F5 75%)", backgroundSize: "200% 100%" }} />
       )}
       <img
+        ref={imgRef}
         key={src}
         src={src}
         alt="Tricimoto"
         onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
         style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block", opacity: loaded ? 1 : 0, transition: "opacity 0.35s ease" }}
       />
     </div>
