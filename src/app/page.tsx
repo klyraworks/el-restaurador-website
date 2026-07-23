@@ -9,7 +9,7 @@ const TRIKE_COLORS: Record<string, { hex: string; label: string, src: string }> 
   "Quilotoa":      { hex: "#ca8a04", label: "Quilotoa",       src: "tricimoto_quilotoa" },
   "Patria Vuelve": { hex: "#2563eb", label: "Patria Vuelve",  src: "tricimoto_patriavuelve" },
   "Taxsancar":     { hex: "#dc2626", label: "Taxsancar",      src: "tricimoto_taxsancar" },
-  "Transtrival":  { hex: "#dc2626", label:  "Transtrival",    src: "tricimoto_transtrival" },
+  "Transtrival":  { hex: "#dc2626", label:  "Transtrival",    src: "tricimoto_taxsancar" },
 };
 
 const TARIFAS: {
